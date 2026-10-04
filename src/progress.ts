@@ -1,5 +1,4 @@
-import type { Mode, RunConfig, SessionResult } from './types';
-import { isAimProfile } from './sensitivity';
+import type { ArchivedAimProfile, Mode, RunConfig, SessionResult } from './types';
 
 const STORAGE_KEY = 'warmup.sessions.v1';
 const HISTORY_LIMIT = 60;
@@ -20,6 +19,18 @@ function count(value: unknown): value is number {
   return nonnegative(value) && Number.isSafeInteger(value);
 }
 
+function isArchivedAimProfile(value: unknown): value is ArchivedAimProfile {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
+  const profile = value as Partial<ArchivedAimProfile>;
+  if ((profile.game !== 'valorant' && profile.game !== 'cs2')
+      || !nonnegative(profile.dpi) || profile.dpi < 100 || profile.dpi > 64000
+      || !nonnegative(profile.sensitivity) || profile.sensitivity <= 0 || profile.sensitivity > 1000
+      || !nonnegative(profile.cm360) || profile.cm360 < 0.1 || profile.cm360 > 100000
+      || !nonnegative(profile.inputUnitsPerCm) || profile.inputUnitsPerCm <= 0 || profile.inputUnitsPerCm > 100000) return false;
+  const recordedScale = 360 * 2.54 / (profile.dpi * profile.sensitivity * (profile.game === 'valorant' ? 0.07 : 0.022));
+  return Math.abs(recordedScale - profile.cm360) <= recordedScale * 1e-9;
+}
+
 function isSession(value: unknown): value is SessionResult {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
   const session = value as Partial<SessionResult>;
@@ -37,7 +48,7 @@ function isSession(value: unknown): value is SessionResult {
     && count(session.hits) && count(session.misses) && count(session.premature)
     && Array.isArray(session.reactionTimes) && session.reactionTimes.every(nonnegative)
     && nonnegative(session.trackingMs) && session.trackingMs <= session.activeMs
-    && (session.aim === undefined || isAimProfile(session.aim));
+    && (session.aim === undefined || isArchivedAimProfile(session.aim));
 }
 
 function newestFirst(a: SessionResult, b: SessionResult): number {
@@ -59,8 +70,9 @@ export function settingsKey(config: ScoringConfig): string {
     return reactionStyle === 'rounds' ? 'reaction:rounds' : `reaction:timed:${settings.duration}`;
   }
   const key = `${mode}:${settings.duration}:${settings.size}${mode === 'tracking' ? `:${settings.speed}` : ''}`;
-  if (!config.aim) return key;
-  return `${key}:aim:${config.aim.game}:${config.aim.dpi}:${config.aim.sensitivity}:${config.aim.inputUnitsPerCm}`;
+  const archivedAim = 'aim' in config ? config.aim : undefined;
+  if (!archivedAim) return key;
+  return `${key}:aim:${archivedAim.game}:${archivedAim.dpi}:${archivedAim.sensitivity}:${archivedAim.inputUnitsPerCm}`;
 }
 
 export function scoreValue(result: SessionResult): number | null {

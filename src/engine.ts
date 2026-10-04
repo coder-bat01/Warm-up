@@ -14,7 +14,6 @@ export class PracticeEngine {
   private readonly layer: HTMLDivElement;
   private readonly target: HTMLDivElement;
   private readonly signal: HTMLDivElement;
-  private readonly reticle: HTMLDivElement;
   private readonly symbol: HTMLSpanElement;
   private readonly heading: HTMLDivElement;
   private readonly hint: HTMLDivElement;
@@ -23,7 +22,6 @@ export class PracticeEngine {
   private readonly timed: boolean;
   private readonly duration: number;
   private readonly trackingSpeed: number;
-  private readonly fpsInput: boolean;
   private phase: Phase = 'countdown';
   private pausedPhase: 'countdown' | 'running' = 'countdown';
   private destroyed = false;
@@ -59,14 +57,12 @@ export class PracticeEngine {
   private cursorX = 0;
   private cursorY = 0;
   private cursorValid = false;
-  private aimCursorInitialized = false;
   private trackingMs = 0;
 
   constructor(arena: HTMLElement, config: RunConfig, callbacks: Callbacks) {
     this.arena = arena;
-    this.config = { ...config, settings: { ...config.settings }, ...(config.aim ? { aim: { ...config.aim } } : {}) };
+    this.config = { ...config, settings: { ...config.settings } };
     this.callbacks = callbacks;
-    this.fpsInput = Boolean(config.aim && config.mode !== 'reaction');
     this.diameter = TARGET_DIAMETERS[config.settings.size];
     this.timed = config.mode !== 'reaction' || config.reactionStyle === 'timed' || config.guided;
     this.duration = config.settings.duration * 1000;
@@ -83,10 +79,6 @@ export class PracticeEngine {
       borderRadius: '50%', transform: 'translate(-50%, -50%)', display: 'none', pointerEvents: 'none',
       background: 'radial-gradient(circle, #fff4dc 0 7%, #ef8b3e 8% 24%, #d56427 25% 28%, #ef8b3e 29% 54%, #ffd4a1 55% 58%, #ef8b3e 59% 100%)',
     });
-    this.reticle = document.createElement('div');
-    this.reticle.className = 'aim-reticle';
-    this.reticle.setAttribute('aria-hidden', 'true');
-    Object.assign(this.reticle.style, { position: 'absolute', left: '0', top: '0', display: this.fpsInput ? 'block' : 'none', pointerEvents: 'none' });
     this.signal = document.createElement('div');
     this.signal.className = 'reaction-signal';
     this.signal.setAttribute('role', 'status');
@@ -100,18 +92,12 @@ export class PracticeEngine {
     this.hint = document.createElement('div');
     this.hint.className = 'reaction-hint';
     this.signal.append(this.symbol, this.heading, this.hint);
-    this.layer.append(this.signal, this.target, this.reticle);
+    this.layer.append(this.signal, this.target);
     this.arena.append(this.layer);
-    if (this.fpsInput) {
-      document.addEventListener('pointerdown', this.onPointerDown, true);
-      document.addEventListener('pointermove', this.onPointerMove, true);
-      document.addEventListener('pointerlockchange', this.onPointerLockChange);
-    } else {
-      this.layer.addEventListener('pointerdown', this.onPointerDown);
-      this.layer.addEventListener('pointermove', this.onPointerMove);
-      this.layer.addEventListener('pointerleave', this.onPointerLeave);
-      this.layer.addEventListener('pointercancel', this.onPointerLeave);
-    }
+    this.layer.addEventListener('pointerdown', this.onPointerDown);
+    this.layer.addEventListener('pointermove', this.onPointerMove);
+    this.layer.addEventListener('pointerleave', this.onPointerLeave);
+    this.layer.addEventListener('pointercancel', this.onPointerLeave);
     document.addEventListener('visibilitychange', this.onVisibility);
     window.addEventListener('blur', this.onBlur);
     window.addEventListener('resize', this.onResize);
@@ -134,13 +120,11 @@ export class PracticeEngine {
     this.target.classList.remove('is-on-target');
     cancelAnimationFrame(this.frameId);
     this.frameId = 0;
-    if (this.fpsInput && document.pointerLockElement === this.arena) document.exitPointerLock();
     this.emit(true);
   }
 
   resume(): void {
-    if (this.destroyed || this.phase !== 'paused' || document.hidden ||
-        this.fpsInput && document.pointerLockElement !== this.arena) return;
+    if (this.destroyed || this.phase !== 'paused' || document.hidden) return;
     this.phase = this.pausedPhase;
     this.lastWall = performance.now();
     this.cursorValid = false;
@@ -157,17 +141,10 @@ export class PracticeEngine {
     this.destroyed = true;
     cancelAnimationFrame(this.frameId);
     this.observer.disconnect();
-    if (this.fpsInput) {
-      document.removeEventListener('pointerdown', this.onPointerDown, true);
-      document.removeEventListener('pointermove', this.onPointerMove, true);
-      document.removeEventListener('pointerlockchange', this.onPointerLockChange);
-      if (document.pointerLockElement === this.arena) document.exitPointerLock();
-    } else {
-      this.layer.removeEventListener('pointerdown', this.onPointerDown);
-      this.layer.removeEventListener('pointermove', this.onPointerMove);
-      this.layer.removeEventListener('pointerleave', this.onPointerLeave);
-      this.layer.removeEventListener('pointercancel', this.onPointerLeave);
-    }
+    this.layer.removeEventListener('pointerdown', this.onPointerDown);
+    this.layer.removeEventListener('pointermove', this.onPointerMove);
+    this.layer.removeEventListener('pointerleave', this.onPointerLeave);
+    this.layer.removeEventListener('pointercancel', this.onPointerLeave);
     document.removeEventListener('visibilitychange', this.onVisibility);
     window.removeEventListener('blur', this.onBlur);
     window.removeEventListener('resize', this.onResize);
@@ -226,8 +203,7 @@ export class PracticeEngine {
   }
 
   private readonly onPointerDown = (event: PointerEvent): void => {
-    if (!event.isPrimary || event.button !== 0 || this.destroyed || this.phase !== 'running' ||
-        this.fpsInput && document.pointerLockElement !== this.arena) return;
+    if (!event.isPrimary || event.button !== 0 || this.destroyed || this.phase !== 'running') return;
     event.preventDefault();
     const now = performance.now();
     this.advance(now);
@@ -252,8 +228,8 @@ export class PracticeEngine {
       return;
     }
     if (this.config.mode === 'tracking' || !this.targetAvailable) return;
-    const x = this.fpsInput ? this.cursorX : event.clientX - this.left;
-    const y = this.fpsInput ? this.cursorY : event.clientY - this.top;
+    const x = event.clientX - this.left;
+    const y = event.clientY - this.top;
     if (x < 0 || y < 0 || x > this.width || y > this.height) return;
     // New targets exclude the previous hit point; discard a native double
     // click's repeated point as well, including on extremely small arenas.
@@ -274,19 +250,6 @@ export class PracticeEngine {
   };
 
   private readonly onPointerMove = (event: PointerEvent): void => {
-    if (this.fpsInput) {
-      if (!event.isPrimary || document.pointerLockElement !== this.arena || this.phase !== 'running') return;
-      this.advance(performance.now());
-      if (this.destroyed || this.phase !== 'running') return;
-      const profile = this.config.aim!;
-      const pixelsPerUnit = this.width / (profile.cm360 * profile.inputUnitsPerCm);
-      this.cursorX = Math.max(0, Math.min(this.width, this.cursorX + event.movementX * pixelsPerUnit));
-      this.cursorY = Math.max(0, Math.min(this.height, this.cursorY + event.movementY * pixelsPerUnit));
-      this.cursorValid = true;
-      this.paintReticle();
-      if (this.config.mode === 'tracking') this.updateTrackingHighlight();
-      return;
-    }
     if (this.config.mode !== 'tracking' || !event.isPrimary || event.pointerType === 'touch' || this.phase !== 'running') return;
     // Close the preceding interval with the OLD cursor position. Movement
     // cannot retroactively turn time spent outside the circle into coverage.
@@ -304,10 +267,6 @@ export class PracticeEngine {
     this.cursorValid = false;
     this.target.classList.remove('is-on-target');
   };
-  private readonly onPointerLockChange = (): void => {
-    if (!this.fpsInput || document.pointerLockElement === this.arena || this.phase === 'paused' || this.phase === 'completed') return;
-    this.pause();
-  };
   private readonly onVisibility = (): void => { if (document.hidden) this.pause(); };
   private readonly onBlur = (): void => { this.pause(); };
   private readonly onScroll = (): void => {
@@ -317,7 +276,7 @@ export class PracticeEngine {
     const rect = this.layer.getBoundingClientRect();
     this.left = rect.left;
     this.top = rect.top;
-    if (!this.fpsInput) this.cursorValid = false;
+    this.cursorValid = false;
     this.target.classList.remove('is-on-target');
   };
   private readonly onResize = (): void => {
@@ -348,18 +307,7 @@ export class PracticeEngine {
     this.maxX = this.width - radius - paddingX;
     this.minY = radius + paddingY;
     this.maxY = this.height - radius - paddingY;
-    if (this.fpsInput) {
-      if (!this.aimCursorInitialized) {
-        this.cursorX = this.width / 2;
-        this.cursorY = this.height / 2;
-        this.aimCursorInitialized = true;
-      } else {
-        this.cursorX = Math.max(0, Math.min(this.width, this.cursorX));
-        this.cursorY = Math.max(0, Math.min(this.height, this.cursorY));
-      }
-      this.cursorValid = document.pointerLockElement === this.arena && this.phase !== 'paused';
-      this.paintReticle();
-    } else this.cursorValid = false;
+    this.cursorValid = false;
     this.target.classList.remove('is-on-target');
     const fits = this.width >= this.diameter && this.height >= this.diameter;
     if (!fits) {
@@ -495,9 +443,6 @@ export class PracticeEngine {
     this.target.style.display = 'block';
     this.target.style.transform = `translate(${this.targetX}px, ${this.targetY}px) translate(-50%, -50%)`;
   }
-  private paintReticle(): void {
-    this.reticle.style.transform = `translate(${this.cursorX}px, ${this.cursorY}px) translate(-50%, -50%)`;
-  }
 
   private updateTrackingHighlight(): void {
     const dx = this.cursorX - this.targetX;
@@ -537,7 +482,6 @@ export class PracticeEngine {
       settings: { ...this.config.settings },
       reactionStyle: this.config.reactionStyle,
       guided: this.config.guided,
-      ...(this.config.aim ? { aim: { ...this.config.aim } } : {}),
       completedAt: new Date().toISOString(),
       activeMs: this.elapsed,
       hits: this.hits,

@@ -21,7 +21,7 @@ function configLabel(result: SessionResult): string {
   const size = `${result.settings.size[0].toUpperCase()}${result.settings.size.slice(1)} targets`;
   const base = `${result.settings.duration}s · ${size}`;
   const speed = result.mode === 'tracking' ? ` · ${result.settings.speed[0].toUpperCase()}${result.settings.speed.slice(1)} speed` : '';
-  const aim = result.aim ? ` · ${result.aim.game === 'valorant' ? 'Valorant' : 'CS2'} · ${result.aim.sensitivity} sens · ${result.aim.dpi} DPI · ${result.aim.cm360.toFixed(1)} cm/360 · ${result.aim.inputUnitsPerCm.toFixed(1)} movement units/cm` : '';
+  const aim = result.aim ? ` · Archived FPS: ${result.aim.game === 'valorant' ? 'Valorant' : 'CS2'} · ${result.aim.sensitivity} sens · ${result.aim.dpi} DPI · ${result.aim.inputUnitsPerCm.toFixed(1)} units/cm` : '';
   return `${base}${speed}${aim}`;
 }
 
@@ -94,7 +94,7 @@ function ScoreChart({ sessions, mode, best }: { sessions: SessionResult[]; mode:
         <span><span className="chart-legend-dot" />Session score · {lowerIsBetter ? 'Lower' : 'Higher'} is better</span>
         <span>{points.length} scored session{points.length === 1 ? '' : 's'}{points.length !== sessions.length ? ` · ${sessions.length - points.length} without a valid score` : ''}</span>
       </div>
-      <p className="progress-chart-note muted">Each point is a saved session with these exact gameplay settings.</p>
+      <p className="progress-chart-note muted">Each point uses the same test settings. Mouse settings, screen size, display refresh rate, and hardware still affect comparisons.</p>
     </>
   );
 }
@@ -143,7 +143,7 @@ export default function ProgressView({ sessions, onReset, onPractice }: Progress
         </div>
         {sessions.length > 0 && (
           <button className="btn btn-secondary progress-reset" type="button" onClick={() => setConfirmReset(true)}>
-            <Trash2 size={16} aria-hidden="true" /> Clear history
+            <Trash2 size={16} aria-hidden="true" /> Clear cursor history
           </button>
         )}
       </div>
@@ -172,11 +172,11 @@ export default function ProgressView({ sessions, onReset, onPractice }: Progress
                 </select>
               </label>
             </div>
-            <p className="muted progress-filter-note">Only identical gameplay settings are compared. Guided and solo sessions count together.</p>
+            <p className="muted progress-filter-note">{selectedConfig?.aim ? 'Archived results are read-only and are not compared with current cursor practice.' : 'Only identical test settings are compared. Guided and solo sessions count together.'}</p>
           </div>
 
           <div className="stat-grid progress-stats">
-            <div className="stat-card"><span className="progress-stat-label">Saved sessions</span><strong className="metric-value">{sessions.length}</strong><span className="muted">Across every practice mode</span></div>
+            <div className="stat-card"><span className="progress-stat-label">Saved sessions</span><strong className="metric-value">{sessions.length}</strong><span className="muted">Across cursor drills</span></div>
             <div className="stat-card"><span className="progress-stat-label">Personal best</span><strong className="metric-value">{best ? scoreLabel(best) : '—'}</strong><span className="muted">{best ? dateFormat.format(new Date(best.completedAt)) : 'No valid score for these settings'}</span></div>
             <div className="stat-card"><span className="progress-stat-label">Latest score</span><strong className="metric-value">{latest ? scoreLabel(latest) : '—'}</strong><span className="muted">{latest ? dateFormat.format(new Date(latest.completedAt)) : 'No sessions for these settings'}</span></div>
           </div>
@@ -209,7 +209,7 @@ export default function ProgressView({ sessions, onReset, onPractice }: Progress
                 </table>
               </div>
             ) : <p className="progress-history-empty muted">No saved sessions for this mode.</p>}
-            <p className="progress-storage-note muted"><Database size={13} aria-hidden="true" />Stored locally: your latest 60 sessions, plus all-time bests for every settings group. Older bests remain in history.</p>
+            <p className="progress-storage-note muted"><Database size={13} aria-hidden="true" />Stored locally: your latest 60 cursor sessions, plus all-time bests for every settings group. Older bests remain in history.</p>
           </div>
         </>
       )}
@@ -217,11 +217,11 @@ export default function ProgressView({ sessions, onReset, onPractice }: Progress
       <dialog ref={dialogRef} className="progress-reset-dialog" aria-labelledby={dialogTitle} aria-describedby={dialogDescription} onCancel={() => setConfirmReset(false)} onClose={() => setConfirmReset(false)}>
         <button type="button" className="progress-dialog-close" aria-label="Cancel clearing history" onClick={() => setConfirmReset(false)}><X size={20} aria-hidden="true" /></button>
         <div className="progress-dialog-icon"><Trash2 size={26} aria-hidden="true" /></div>
-        <h2 id={dialogTitle}>Clear practice history?</h2>
-        <p id={dialogDescription} className="muted">This removes all saved sessions and personal bests from this device. It cannot be undone. Your practice settings will stay the same.</p>
+        <h2 id={dialogTitle}>Clear cursor history?</h2>
+        <p id={dialogDescription} className="muted">This removes saved cursor sessions and their personal bests from this device. It cannot be undone. Tile scores and practice settings will stay the same.</p>
         <div className="progress-dialog-actions">
           <button ref={cancelRef} className="btn btn-secondary" type="button" onClick={() => setConfirmReset(false)}>Cancel</button>
-          <button className="btn btn-danger" type="button" onClick={() => { setConfirmReset(false); dialogRef.current?.close(); onReset(); }}><Trash2 size={16} aria-hidden="true" />Clear all history</button>
+          <button className="btn btn-danger" type="button" onClick={() => { setConfirmReset(false); dialogRef.current?.close(); onReset(); }}><Trash2 size={16} aria-hidden="true" />Clear cursor history</button>
         </div>
       </dialog>
     </section>

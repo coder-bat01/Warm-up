@@ -1,31 +1,23 @@
 export type Mode = 'reaction' | 'target' | 'flick' | 'tracking';
 export type TargetSize = 'easy' | 'medium' | 'hard';
 export type Speed = 'slow' | 'steady' | 'fast';
-export type AimGame = 'valorant' | 'cs2';
-export type AimMode = 'cursor' | 'fps';
-export interface GameAimSettings { dpi: string; sensitivity: string }
-export interface AimPreferences {
-  mode: AimMode;
-  game: AimGame;
-  profiles: Record<AimGame, GameAimSettings>;
-  calibrationUnitsPerCm: Record<AimGame, number | null>;
-}
-export interface AimProfile {
-  game: AimGame;
+/** Metadata retained only for archived FPS-profile results. */
+export interface ArchivedAimProfile {
+  game: 'valorant' | 'cs2';
   dpi: number;
   sensitivity: number;
   cm360: number;
   inputUnitsPerCm: number;
 }
 export interface Settings { duration: 30 | 60; size: TargetSize; speed: Speed }
-export interface RunConfig { mode: Mode; settings: Settings; reactionStyle: 'rounds' | 'timed'; guided: boolean; aim?: AimProfile }
+export interface RunConfig { mode: Mode; settings: Settings; reactionStyle: 'rounds' | 'timed'; guided: boolean }
 export interface SessionResult {
   id: string;
   mode: Mode;
   settings: Settings;
   reactionStyle: 'rounds' | 'timed';
   guided: boolean;
-  aim?: AimProfile;
+  aim?: ArchivedAimProfile;
   completedAt: string;
   activeMs: number;
   hits: number;
