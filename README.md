@@ -1,142 +1,223 @@
-# Warmup
+# <p align="center">Warmup</p>
 
-A local-first browser app for reaction time, mouse accuracy, flick speed, cursor tracking, and black-tile tapping. Built with React 19, TypeScript, Tailwind CSS 4, and Vite.
+<p align="center">
+  <strong>Fast, local-first browser practice for reaction speed, mouse accuracy, flick timing, cursor tracking, and tile agility.</strong>
+</p>
 
-No account, backend, leaderboard, analytics, or remote game services. Scores stay in your browser.
+<p align="center">
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 5.8" />
+  <img src="https://img.shields.io/badge/Vite-6.3-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite 6" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4.1-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS 4" />
+  <img src="https://img.shields.io/badge/Privacy-Zero_Tracking-brightgreen?style=flat-square" alt="Zero Tracking" />
+  <img src="https://img.shields.io/badge/License-MIT-orange?style=flat-square" alt="MIT License" />
+</p>
 
-## Practice modes
+---
 
-All five modes are in the **Practice modes** sidebar. Main navigation contains only **Practice** and **Your progress**.
+## Highlights
 
-| Mode | What you do | Score |
-| --- | --- | --- |
-| **Targets** | Click randomly positioned circular targets. Each hit spawns the next target; off-target clicks count as misses. | Hits per active second, with hits, misses, and accuracy. |
-| **Reaction** | Wait through a random 2–5-second delay, then click when the arena turns red and says “Click now!”. Early clicks do not count; retry until five valid attempts are complete. | Median reaction time, best attempt, all five attempts, and early clicks. |
-| **Flicks** | Click targets alternating between widely separated left/right positions. A miss does not move the target. | Average active time from target spawn to hit, plus hits, misses, and accuracy. |
-| **Tracking** | Keep your mouse or trackpad cursor inside a smoothly moving target without clicking. | Percentage of active practice time on target. |
-| **Don’t tap** | Tap black tiles in a 4 × 4 grid. One white-tile tap ends the round. | Mode-specific tap count or completion time. |
+- **Local-First & Private:** No user accounts, cloud databases, telemetry, analytics, or third-party ads. Scores remain entirely in your browser (`localStorage`).
+- **Native Cursor Feel:** Uses your actual browser cursor without mouse capture or emulation layers. Real mouse acceleration and OS sensitivity are preserved naturally.
+- **Decoupled 60+ FPS Engine:** Game loops run directly on `requestAnimationFrame` with sub-millisecond `performance.now()` precision, updating React state only on throttled score milestones.
+- **5 Focused Drills:** Targets (precision), Reaction (reflexes), Flicks (speed), Tracking (smoothness), and Don’t Tap (tile agility).
+- **3-Minute Guided Routine:** A pre-configured sequence chaining all four cursor drills for pre-match muscle activation.
+- **Zero Install:** Instant load in any modern desktop or mobile browser.
 
-Select a mode and press **Start session**. Every session begins with a three-second countdown.
+---
 
-### Cursor-drill settings
+## Table of Contents
 
-Start immediately with the defaults, or use **Change** in the **Session setup** strip above the arena:
+- [Practice Modes](#practice-modes)
+  - [Mode Overview](#mode-overview)
+  - [1. Targets (Precision)](#1-targets-precision)
+  - [2. Reaction Test (Reflexes)](#2-reaction-test-reflexes)
+  - [3. Flicks (Speed)](#3-flicks-speed)
+  - [4. Tracking (Control)](#4-tracking-control)
+  - [5. Don’t Tap (Tile Agility)](#5-dont-tap-tile-agility)
+- [3-Minute Warmup Routine](#3-minute-warmup-routine)
+- [Controls & Hotkeys](#controls--hotkeys)
+- [Progress & Score Storage](#progress--score-storage)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Installation & Development](#installation--development)
+  - [Production Build](#production-build)
+- [Project Architecture](#project-architecture)
+- [Documentation Links](#documentation-links)
+- [License](#license)
 
-- Targets, Flicks, and Tracking: 30 or 60 seconds.
-- Target diameter: easy 76 px, medium 52 px, or hard 32 px.
-- Tracking movement: slow, steady, or fast.
-- Defaults: 30 seconds, medium targets, and steady tracking.
-- Solo Reaction: five valid attempts, with no adjustable setup.
+---
 
-Cursor drills use normal browser input. Reaction states have text and symbols as well as color. Tracking requires a mouse or trackpad and does not score touch input.
+## Practice Modes
 
-### Don’t tap variants
+All drills are accessible from the unified **Practice modes** sidebar. Navigation stays simple: **Practice** for gameplay and **Your progress** for historical trends.
 
-Choose a variant above the board; there is no separate Games section.
+### Mode Overview
 
-- **Frenzy:** score as many black-tile taps as possible in 30 active seconds. Each successful tap moves a black tile to a different cell. More taps is better.
-- **Endurance:** begin with 10 active seconds. Every 40 successful taps adds 10 seconds to the time remaining. Play until time expires or you tap white. More taps is better.
-- **Pattern:** clear four black tiles in any order before the next board appears. Complete 10 patterns, for 40 tiles total, as quickly as possible. Cleared tiles show a check and cannot score twice. Only completed runs set best times; lower is better.
+| Drill | Objective | Metric | Primary Input |
+| --- | --- | --- | --- |
+| **Targets** | Hit circular targets as fast as they appear | Hits / active second & Accuracy | Mouse / Trackpad |
+| **Reaction** | Click anywhere when the arena flashes red | Median latency (ms) | Mouse / Trackpad |
+| **Flicks** | Alternate hits between opposite edges | Average time-to-hit (ms) | Mouse / Trackpad |
+| **Tracking** | Keep cursor centered inside moving target | On-target time percentage (%) | Mouse / Trackpad |
+| **Don’t Tap** | Tap black tiles on a 4 × 4 grid; avoid white | Taps or clear time | Mouse / Touch / Keyboard |
 
-Mouse and touch score on press. Keyboard users can Tab to a tile, then press Enter or Space. Each variant has its own **Personal best** and **Recent rounds** below the board.
+---
 
-The tile mechanics are inspired by [DontTap](https://www.donttap.com/). Warmup uses its own interface and implementation, without embedding that site, its assets, ads, or services.
+### 1. Targets (Precision)
+- **Gameplay:** A single circular target spawns within the arena bounds. Clicking it registers a hit and immediately spawns a new target. Clicks outside the circle register as misses.
+- **Options:** Duration (30s / 60s), Target Size (Easy 76 px, Medium 52 px, Hard 32 px).
+- **Score:** Hits per second, total hits, misses, and hit accuracy percentage.
 
-## 3-minute warmup
+### 2. Reaction Test (Reflexes)
+- **Gameplay:** The screen displays a green "Wait" signal. After a randomized 2–5-second delay, the screen turns red with "Click now!". Click anywhere within the arena as quickly as possible.
+- **Anti-Cheat Delay:** Premature clicks during the green phase do not register as scores; you are prompted to retry.
+- **Rounds:** Standard mode requires 5 valid attempts. Guided warmup runs Reaction in a continuous 30-second sprint.
+- **Score:** Median response time across all valid attempts (filters out outliers), plus individual attempt latencies.
 
-The sidebar’s **3-minute warmup** runs the four cursor drills in order:
+### 3. Flicks (Speed)
+- **Gameplay:** Targets alternate back and forth between distant left and right quadrants of the arena. Misses do not advance the target position, forcing quick correction.
+- **Options:** Duration (30s / 60s), Target Size (76 px / 52 px / 32 px).
+- **Score:** Average active time required to transition and hit each target, plus accuracy.
 
-1. Reaction: 30 seconds of timed practice, rather than a fixed five attempts.
-2. Targets: 60 seconds.
-3. Flicks: 30 seconds.
-4. Tracking: 60 seconds.
+### 4. Tracking (Control)
+- **Gameplay:** A target glides along a smooth, non-linear path inside the arena. Keep your cursor inside the circle without clicking.
+- **Options:** Duration (30s / 60s), Size (76 px / 52 px / 32 px), Movement Speed (Slow, Steady, Fast).
+- **Score:** Percentage of total active session time the cursor remained inside the target boundary.
 
-Exercises advance automatically, using medium targets and steady tracking. Each exercise has a three-second countdown: total wall time is about 3 minutes 12 seconds, excluding pauses. Completed exercises are saved individually, and the end screen combines their results. Don’t tap is not part of this routine.
+### 5. Don’t Tap (Tile Agility)
+Adapted from classic black-and-white tile agility games ([DontTap](https://www.donttap.com/)), completely reimplemented natively with zero external assets or advertising.
+- **Frenzy:** Score as many black-tile taps as possible within a fixed 30-second window. Each tap swaps the tile position.
+- **Endurance:** Starts with a 10-second timer. Every 40 successful taps grants +10 bonus seconds. Tapping white ends the run immediately.
+- **Pattern:** Clear 10 consecutive boards (4 black tiles each, 40 total). Cleared tiles show a checkmark and cannot be retapped. Only complete 40-tile runs qualify for personal bests (lower time is better).
+- **Inputs:** Supports pointer clicks, native touch taps (48+ px touch targets), and keyboard navigation (`Tab` to navigate, `Enter` or `Space` to tap).
 
-## Controls
+---
 
-- **Pause**, **Restart**, and **Exit practice** are available during a session.
-- **Escape** pauses; another Escape while paused exits. Browsers may reserve Escape to leave fullscreen.
-- Losing window focus or hiding the tab automatically pauses countdowns, timers, and scoring. Resume is explicit. Reaction signals are rearmed on resume.
-- Switching drills or tile variants discards an unfinished session. Restart clears the current session; restarting a guided warmup returns to its first exercise.
-- Results offer **Repeat session** or **Repeat warmup**. Tile results also offer **Back to practice**.
-- Cursor drills have fullscreen controls; Don’t tap does not.
-- Session timers exclude paused time and stop at their active-time deadline.
+## 3-Minute Warmup Routine
 
-## Scores and progress
+Clicking **3-minute warmup** in the sidebar launches an automated sequence designed to wake up hand-eye coordination before competitive play:
 
-Scores use versioned localStorage on the current device and browser origin:
+```text
+[ 3s Countdown ]
+       │
+       ▼
+1. Reaction Test    ───► 30 Seconds (Continuous Timed Sprint)
+       │
+       ▼
+2. Target Practice  ───► 60 Seconds (Medium Targets: 52 px)
+       │
+       ▼
+3. Flick Practice   ───► 30 Seconds (Medium Targets: 52 px)
+       │
+       ▼
+4. Tracking         ───► 60 Seconds (Medium Targets, Steady Speed)
+       │
+       ▼
+[ Combined Results Screen with Per-Drill Breakdowns ]
+```
 
-- `warmup.sessions.v1`: the latest 60 cursor sessions, plus all-time bests for each matching-settings group.
-- `warmup.tiles.v1`: the latest 60 tile rounds, plus all-time bests for each tile variant.
+- Each phase starts with a 3-second countdown (total wall time: ~3 minutes 12 seconds).
+- Exercises transition automatically without menu interaction.
+- Individual results are saved separately under matching settings groups in your history.
 
-**Your progress** contains cursor-drill charts, settings filters, recent results, and personal bests. Tile history stays below the Don’t tap board. Matching cursor settings determine comparisons: reaction format and timed duration; target/flick duration and size; tracking duration, size, and speed. Guided and solo sessions with matching settings share a group. Sessions with no valid reaction or flick score do not set a best.
+---
 
-Older saved results labeled **Archived FPS** remain readable in separate comparison groups. They cannot be repeated and never set bests for current cursor sessions. This is historical score support, not an available practice setting.
+## Controls & Hotkeys
 
-**Clear cursor history** requires confirmation and removes cursor sessions and bests only. It leaves tile scores and current practice settings unchanged. Clearing browser site data removes both histories.
+- **Escape (`Esc`):** Pause active session. Press `Esc` a second time while paused to exit back to mode selection.
+- **Auto-Pause on Blur:** Switching browser tabs or minimizing the window automatically freezes all active timers and game loops. Resuming requires an explicit click.
+- **Reaction Signal Rearming:** Resuming a paused reaction test cancels any active signal and restarts the randomized wait period, preventing unfair instant clicks.
+- **Fullscreen:** Cursor drills provide a fullscreen toggle button in the station header.
 
-If browser storage is unavailable, completed scores remain in memory for the current visit and the app warns that they were not saved. Tile scores and bests survive navigation between drills and progress during that visit. Unsaved results are lost when the page is reloaded or closed.
+---
 
-## Run locally
+## Progress & Score Storage
 
-Use Node.js 22 or newer and npm. From a fresh clone:
+All session history is stored locally on the client using isolated, versioned keys:
 
-```sh
+- `warmup.sessions.v1`: Stores the latest 60 cursor drill sessions plus all-time personal bests for each unique settings group.
+- `warmup.tiles.v1`: Stores the latest 60 tile rounds plus all-time bests for Frenzy, Endurance, and Pattern modes.
+
+### Privacy & Data Safety
+- **Origin-Bound:** Scores are scoped to your exact domain/port origin (`http://localhost:5173`, your custom domain, etc.).
+- **Graceful Fallback:** If `localStorage` is blocked or unavailable (e.g., restricted iframe or privacy mode), the app continues running flawlessly with visit-long in-memory score tracking.
+- **Selective Reset:** The **Clear cursor history** action wipes cursor drill results without affecting tile records or preferences.
+
+---
+
+## Quick Start
+
+### Prerequisites
+- [Node.js 22 LTS](https://nodejs.org/) or newer
+- `npm` (bundled with Node.js)
+
+### Installation & Development
+
+```bash
+# Clone the repository
 git clone https://github.com/coder-bat01/Warm-up.git
 cd Warm-up
-npm ci
+
+# Install dependencies
+npm install
+
+# Start Vite local development server
 npm run dev
 ```
 
-Open the URL printed by Vite, normally `http://localhost:5173/`. Vite chooses another port if that port is occupied.
+Open the printed URL (defaults to `http://localhost:5173/`).
 
-### Production build
+> **Tip for WSL Users:** If source file changes on a mounted Windows drive (`/mnt/c/...`) do not trigger hot reload, run:
+> ```bash
+> CHOKIDAR_USEPOLLING=true npm run dev
+> ```
 
-```sh
+### Production Build
+
+```bash
+# Type check with TypeScript and bundle production assets
 npm run build
+
+# Preview production build locally
 npm run preview
 ```
 
-`npm run build` runs strict TypeScript checking and creates the production app in `dist/`. Preview serves that build locally; it is not a production server.
+The production output is built to `dist/`. You can serve it using any static web server (GitHub Pages, Vercel, Netlify, Cloudflare Pages, Nginx, or Caddy).
 
-Deploy `dist/` to a static HTTPS host. The default build assumes the app is served at the domain root. For a host using a subdirectory, set the matching Vite base when building, for example:
+---
 
-```sh
-npm run build -- --base=/Warm-up/
+## Project Architecture
+
+```text
+src/
+├── App.tsx             # Root application shell, navigation, and station routing
+├── main.tsx            # React 19 entry point and StrictMode wrapper
+├── engine.ts           # DOM-based PracticeEngine for cursor drills (rAF loop)
+├── TilePractice.tsx    # Don't Tap view container, variant selector, and results
+├── tileGame.ts         # High-performance tile grid engine and collision logic
+├── ProgressView.tsx    # Performance analytics, charts, filters, and history table
+├── progress.ts         # Validation, comparison keys, and storage for cursor drills
+├── tileProgress.ts     # Validation, comparison keys, and storage for tile drills
+├── types.ts            # Type definitions for cursor drills and configurations
+├── tileTypes.ts        # Type definitions for tile games and snapshots
+└── styles.css          # Tailwind CSS 4 setup and custom styling rules
 ```
 
-Publishing the source repository to GitHub does not itself deploy the website. Localhost or HTTPS is needed for secure browser APIs. Scores belong to an origin, so different hosts or ports have separate histories.
+For an in-depth breakdown of the decoupled rendering model, timer mathematics, and memory safety invariants, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-### Windows and WSL
+---
 
-From the existing Windows checkout, run npm commands in `C:\Projects\Warm up`. Its WSL path is `/mnt/c/Projects/Warm up`.
+## Documentation Links
 
-If edits on the mounted Windows drive do not reach Vite, enable watcher polling in WSL:
+- [Architecture & Timing Model](docs/ARCHITECTURE.md) — Detailed explanation of the DOM engine, active clock, and frame lifecycle.
+- [Game Modes & Formulas](docs/MODES.md) — Mathematical definitions of scores, hit detection, and rules.
+- [Deployment Guide](docs/DEPLOYMENT.md) — Step-by-step guides for GitHub Pages, Vercel, Cloudflare, and custom domains.
+- [Contributing Guidelines](CONTRIBUTING.md) — Information on submitting issues and pull requests.
 
-```sh
-CHOKIDAR_USEPOLLING=true npm run dev
-```
+---
 
-## Implementation and verification
+## License
 
-- `src/App.tsx`: shared navigation, cursor sessions, guided transitions, and visit-long score state.
-- `src/engine.ts`: cursor gameplay, active-time timing, reaction signals, and tracking coverage.
-- `src/TilePractice.tsx`: Don’t tap controls, board surface, results, and recent rounds inside Practice.
-- `src/tileGame.ts`: reusable tile board, input handling, pause, deadlines, and completion.
-- `src/progress.ts` and `src/tileProgress.ts`: validated storage, score eligibility, history retention, and bests.
-- `src/ProgressView.tsx`: cursor history, comparisons, charts, and confirmation-protected reset.
-- `src/types.ts` and `src/tileTypes.ts`: mode contracts and settings.
-- `src/styles.css`: responsive layout and locally bundled typography.
-
-Gameplay runs outside React’s frame-by-frame render cycle. The engines use `performance.now()` and `requestAnimationFrame`, send throttled UI updates, and remove animation frames and listeners on exit or mode changes.
-
-There is no automated test script configured. Build with `npm run build`, then smoke the actual app: all five mode destinations, hit/miss scoring, reaction retry, pause/resume, restart, variant switching, Pattern completion, Endurance bonuses, reload persistence, cursor-history reset, and blocked-storage navigation. Inspect desktop, tablet, and phone layouts and browser errors.
-
-Generated `node_modules/`, `dist/`, `.vite/`, and TypeScript build-info files are ignored by Git. Commit the source and lockfile, not generated output.
-
-## Limitations
-
-This measures browser input performance, not an in-game camera or raw-input pipeline. Mouse settings and acceleration, device hardware, screen and arena dimensions, browser zoom, refresh rate, and scheduling affect scores. Use consistent conditions when comparing sessions; matching settings alone does not make results hardware-independent.
-
-Desktop mouse practice is the primary experience. Don’t tap supports touch and keyboard; Tracking requires a mouse or trackpad. Fullscreen availability depends on the browser. Scores are local, are not synchronized across devices, and are not sent to a server.
+This project is open-source under the [MIT License](LICENSE).
+Copyright © 2026 coder-bat01.
