@@ -183,7 +183,7 @@ npm run build
 npm run preview
 ```
 
-The production output is built to `dist/`. You can serve it using any static web server (GitHub Pages, Vercel, Netlify, Cloudflare Pages, Nginx, or Caddy).
+The production output is built to `dist/`. Deploy this Vite app on Vercel with the settings in the [Deployment Guide](docs/DEPLOYMENT.md); its default asset paths need no extra configuration.
 
 ---
 
@@ -212,7 +212,7 @@ For an in-depth breakdown of the decoupled rendering model, timer mathematics, a
 
 - [Architecture & Timing Model](docs/ARCHITECTURE.md) — Detailed explanation of the DOM engine, active clock, and frame lifecycle.
 - [Game Modes & Formulas](docs/MODES.md) — Mathematical definitions of scores, hit detection, and rules.
-- [Deployment Guide](docs/DEPLOYMENT.md) — Step-by-step guides for GitHub Pages, Vercel, Cloudflare, and custom domains.
+- [Deployment Guide](docs/DEPLOYMENT.md) — Vercel setup and alternative static hosting options.
 - [Contributing Guidelines](CONTRIBUTING.md) — Information on submitting issues and pull requests.
 
 ---

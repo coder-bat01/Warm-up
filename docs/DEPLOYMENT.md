@@ -4,33 +4,15 @@ Warmup is a fully static client-side web application. It requires no Node.js run
 
 ---
 
-## 1. Deploying to GitHub Pages (Automated via GitHub Actions)
+## 1. Deploying to Vercel
 
-The repository includes a ready-to-use GitHub Actions workflow in `.github/workflows/deploy.yml`.
+Vercel detects Vite projects automatically. Vite's default `/` base path works for this deployment, so no extra base-path configuration or `vercel.json` file is required.
 
-### Setup Instructions
-1. Push the repository to GitHub on branch `main`.
-2. Go to your repository on GitHub: **Settings** → **Pages**.
-3. Under **Build and deployment** → **Source**, select **GitHub Actions**.
-4. Future pushes to the `main` branch will automatically trigger `.github/workflows/deploy.yml`, compile with `--base=/Warm-up/`, and deploy to:
-   ```text
-   https://<username>.github.io/Warm-up/
-   ```
-
-### Manual GitHub Pages Build
-If you prefer building locally and deploying the static branch manually:
-```bash
-# Build with the repository path prefix
-npm run build -- --base=/Warm-up/
-
-# The production assets in dist/ can now be published to your gh-pages branch
-```
-
----
-
-## 2. Deploying to Vercel
-
-Vercel detects Vite applications automatically.
+### Via the Vercel Dashboard
+1. Import `coder-bat01/Warm-up` from GitHub in the Vercel dashboard.
+2. Keep the project root as `./` and select the **Vite** framework preset.
+3. Use `npm run build` as the build command and `dist` as the output directory.
+4. Click **Deploy**. Vercel will create deployments for future pushes to the configured production branch.
 
 ### Via Vercel CLI
 ```bash
@@ -38,16 +20,11 @@ npm i -g vercel
 vercel
 ```
 
-### Via Vercel Web Dashboard
-1. Import `coder-bat01/Warm-up` from GitHub.
-2. Framework Preset: **Vite**.
-3. Build Command: `npm run build`.
-4. Output Directory: `dist`.
-5. Click **Deploy**.
+Use `vercel --prod` to deploy a production build from the CLI.
 
 ---
 
-## 3. Deploying to Cloudflare Pages
+## 2. Deploying to Cloudflare Pages
 
 1. In Cloudflare Dashboard, go to **Workers & Pages** → **Create Application** → **Pages** → **Connect to Git**.
 2. Select the `Warm-up` repository.
@@ -59,7 +36,7 @@ vercel
 
 ---
 
-## 4. Deploying to Netlify
+## 3. Deploying to Netlify
 
 ### Via Netlify CLI
 ```bash
@@ -77,7 +54,7 @@ netlify deploy --prod --dir=dist
 
 ---
 
-## 5. Self-Hosting (Nginx / Caddy / Docker)
+## 4. Self-Hosting (Nginx / Caddy / Docker)
 
 ### Nginx Configuration
 ```nginx
@@ -126,7 +103,7 @@ warmup.yourdomain.com {
 
 ---
 
-## 6. Important Browser & Runtime Considerations
+## 5. Important Browser & Runtime Considerations
 
 ### HTTPS is Required for Accurate Timing
 Modern web browsers (Chromium, Firefox, Safari) clamp the resolution of `performance.now()` on unencrypted HTTP connections to mitigate micro-architectural timing attacks (Spectre).
